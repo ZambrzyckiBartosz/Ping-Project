@@ -1,5 +1,7 @@
 using System.Net;
+using System.Net.Security;
 using System.Net.Sockets;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Ping_Project.Entities;
 using Ping_Project.Infrastructure.Repository;
@@ -7,14 +9,15 @@ using Ping_Project.Validation;
 
 namespace Ping_Project.Services;
 
-public class TcpReceiverService(IServiceScopeFactory _scopeFactory) : BackgroundService
+public class TcpReceiverService(IServiceScopeFactory _scopeFactory, IConfiguration _configuration) : BackgroundService
 {
-    private readonly int _port = 4444;
-
+    private readonly int _port = _configuration.GetValue<int>("Port");
+    private readonly string? _certificatePassword = _configuration.GetValue <string>("CertPassword");
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         TcpListener listener = new TcpListener(IPAddress.Any, _port);
         listener.Start();
+        var serverCertificate = new X509Certificate2("/home/bob/Ping-Project/croc_shield.pfx",_certificatePassword);
         Console.WriteLine("Listening on port " + _port);
 
         try
@@ -25,15 +28,18 @@ public class TcpReceiverService(IServiceScopeFactory _scopeFactory) : Background
                 {
                     using TcpClient client = await listener.AcceptTcpClientAsync(stoppingToken);
 
-                    await using NetworkStream stream = client.GetStream();
-                    using StreamReader reader = new StreamReader(stream, Encoding.UTF8);
+                    await using NetworkStream rawStream = client.GetStream();
+                    await using SslStream sslStream = new SslStream(rawStream, false);
+                    await sslStream.AuthenticateAsServerAsync(serverCertificate, clientCertificateRequired: false,
+                        checkCertificateRevocation: false);
+                    using StreamReader reader = new StreamReader(sslStream, Encoding.UTF8);
 
                     string? receivedData = await reader.ReadLineAsync(stoppingToken);
                     if (!string.IsNullOrEmpty(receivedData))
                     {
                         Console.WriteLine("New data received");
 
-                        string[] subData = receivedData.Split('|');
+                        string[] subData = receivedData.Split('|',2);
                         if (subData.Length == 2)
                         {
                             Console.WriteLine($"{DateTime.Now}: Received {subData[1]}");
@@ -60,7 +66,7 @@ public class TcpReceiverService(IServiceScopeFactory _scopeFactory) : Background
             }
         }
         
-        catch(Exception ex) when (stoppingToken.IsCancellationRequested){}
+        catch when (stoppingToken.IsCancellationRequested){}
         
         finally
         {

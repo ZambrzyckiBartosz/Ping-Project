@@ -19,7 +19,7 @@ public static class PasswordValidaton
 
             return respone.ToUpper().Contains("ZAPISZ");
         }
-        catch (Exception ex)
+        catch
         {
             return true;
         }
