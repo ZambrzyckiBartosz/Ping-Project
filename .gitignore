@@ -4,5 +4,5 @@ appsettings.Development.json
 obj/
 bin/
 croc_shield.pfx
-rsa_private.pma
-rsa_public.pma
+rsa_private.pem
+rsa_public.pem
