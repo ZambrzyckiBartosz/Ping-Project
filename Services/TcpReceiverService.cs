@@ -3,14 +3,12 @@ using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using Ping_Project.Entities;
 using Ping_Project.Handlers;
-using Ping_Project.Infrastructure.Repository;
 using Ping_Project.Validation;
 
 namespace Ping_Project.Services;
 
-public class TcpReceiverService(IServiceScopeFactory _scopeFactory, IConfiguration _configuration, DiscordAlertService _discordAlert, TokenValidaton _tokenValidator) : BackgroundService
+public class TcpReceiverService(IConfiguration _configuration, DataValidation _dataValidation) : BackgroundService
 {
     private readonly int _port = _configuration.GetValue<int>("Port");
     private readonly string? _certificatePassword = _configuration.GetValue <string>("CertPassword");
@@ -45,37 +43,45 @@ public class TcpReceiverService(IServiceScopeFactory _scopeFactory, IConfigurati
                     await sslStream.AuthenticateAsServerAsync(sslOptions, timeout.Token);
                     using StreamReader reader = new StreamReader(sslStream, Encoding.UTF8);
 
-                    string? receivedData = await reader.ReadLineAsync(timeout.Token);
-                    if (!string.IsNullOrEmpty(receivedData))
+                    char[] buffer = new char[4096];
+                    int bytesToRead = await reader.ReadAsync(buffer,0, buffer.Length);
+                    string rawData = new string (buffer, 0, bytesToRead);
+
+                    string startTag = "session_id=";
+                    string endTag = ";";
+
+                    int startIndex = rawData.IndexOf(startTag);
+                    if (startIndex != -1)
                     {
-                        var decryptedData = await rsaHandler.decryptRsa(receivedData);
-
-                        if (string.IsNullOrEmpty(decryptedData))
-                        {
-                            Console.WriteLine("RSA error");
-                            continue;
-                        }
-                        Console.WriteLine($"Decrypted data: '{decryptedData}'");
-                        string[] subData = decryptedData.Split('|', 2);
                         
-                        Console.WriteLine(subData.Length);
-                        if (subData.Length == 2)
+                        startIndex += startTag.Length;
+                        int endIndex = rawData.IndexOf(endTag,startIndex);
+
+                        if (endIndex == -1)
                         {
-                            Console.WriteLine($"{DateTime.Now}: Received {subData[1]}");
+                            endIndex = rawData.IndexOf('\n', startIndex);
+                        }
+                        
+                        string receivedData = rawData.Substring(startIndex,endIndex - startIndex);
+                        receivedData = receivedData.Trim('\r','\n');
+                        if (!string.IsNullOrEmpty(receivedData))
+                        {
+                            var decryptedData = await rsaHandler.decryptRsa(receivedData);
 
-                            if (_tokenValidator.IsValid(subData[0]))
+                            if (string.IsNullOrEmpty(decryptedData))
                             {
-                                Console.WriteLine("Token is valid");
+                                Console.WriteLine("RSA error");
+                                continue;
+                            }
 
-                                using (var scope = _scopeFactory.CreateScope())
-                                {
-                                    var repo = scope.ServiceProvider.GetRequiredService<LogRepository>();
-                                    var toSave = new Payload { log = subData[1] };
-                                    await repo.SaveLogs(toSave);
+                            Console.WriteLine($"Decrypted data: '{decryptedData}'");
+                            string[] subData = decryptedData.Split('|', 3);
 
-                                    string discordMessage = $"New data in database {DateTime.Now:HH:mm:ss}";
-                                    await _discordAlert.SendAlert(discordMessage);
-                                }
+                            Console.WriteLine(subData.Length);
+                            if (subData.Length == 3)
+                            {
+                                await _dataValidation.ValidData(subData[0], subData[1], subData[2]);
+
                             }
                         }
                     }
