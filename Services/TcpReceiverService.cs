@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Ping_Project.Entities;
+using Ping_Project.Handlers;
 using Ping_Project.Infrastructure.Repository;
 using Ping_Project.Validation;
 
@@ -29,7 +30,7 @@ public class TcpReceiverService(IServiceScopeFactory _scopeFactory, IConfigurati
                     using TcpClient client = await listener.AcceptTcpClientAsync(stoppingToken);
 
                     using var timeout = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
-                    timeout.CancelAfter(TimeSpan.FromSeconds(3));
+                    timeout.CancelAfter(TimeSpan.FromSeconds(10));
 
                     await using NetworkStream rawStream = client.GetStream();
                     await using SslStream sslStream = new SslStream(rawStream, false);
@@ -47,9 +48,15 @@ public class TcpReceiverService(IServiceScopeFactory _scopeFactory, IConfigurati
                     string? receivedData = await reader.ReadLineAsync(timeout.Token);
                     if (!string.IsNullOrEmpty(receivedData))
                     {
-                        Console.WriteLine("New data received");
+                        var decryptedData = await rsaHandler.decryptRsa(receivedData);
 
-                        string[] subData = receivedData.Split('|', 2);
+                        if (string.IsNullOrEmpty(decryptedData))
+                        {
+                            Console.WriteLine("RSA error");
+                            continue;
+                        }
+                        Console.WriteLine($"Decrypted data: '{decryptedData}'");
+                        string[] subData = decryptedData.Split('|', 2);
                         
                         Console.WriteLine(subData.Length);
                         if (subData.Length == 2)
