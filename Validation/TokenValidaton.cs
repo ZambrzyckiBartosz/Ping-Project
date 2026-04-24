@@ -1,6 +1,6 @@
 namespace Ping_Project.Validation;
 
-public static class TokenValidaton
+public class TokenValidaton(IConfiguration _configuration)
 {
-    public static bool IsValid(string token) => token == "S3rWerT0kEn";
+    public bool IsValid(string token) => token == _configuration.GetValue<string>("ServerToken");
 }

@@ -9,6 +9,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<Encrypt>();
 builder.Services.AddSingleton<Decrypt>();
+builder.Services.AddSingleton<TokenValidaton>();
+builder.Services.AddSingleton<DiscordAlertService>();
 builder.Services.AddHostedService<TcpReceiverService>();
 builder.Services.AddScoped<LogRepository>();
 builder.Services.AddDbContext<AppDbContext>(options =>

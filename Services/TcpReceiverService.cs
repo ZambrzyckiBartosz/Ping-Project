@@ -9,7 +9,7 @@ using Ping_Project.Validation;
 
 namespace Ping_Project.Services;
 
-public class TcpReceiverService(IServiceScopeFactory _scopeFactory, IConfiguration _configuration) : BackgroundService
+public class TcpReceiverService(IServiceScopeFactory _scopeFactory, IConfiguration _configuration, DiscordAlertService _discordAlert, TokenValidaton _tokenValidator) : BackgroundService
 {
     private readonly int _port = _configuration.GetValue<int>("Port");
     private readonly string? _certificatePassword = _configuration.GetValue <string>("CertPassword");
@@ -28,23 +28,35 @@ public class TcpReceiverService(IServiceScopeFactory _scopeFactory, IConfigurati
                 {
                     using TcpClient client = await listener.AcceptTcpClientAsync(stoppingToken);
 
+                    using var timeout = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
+                    timeout.CancelAfter(TimeSpan.FromSeconds(3));
+
                     await using NetworkStream rawStream = client.GetStream();
                     await using SslStream sslStream = new SslStream(rawStream, false);
-                    await sslStream.AuthenticateAsServerAsync(serverCertificate, clientCertificateRequired: false,
-                        checkCertificateRevocation: false);
+
+                    var sslOptions = new SslServerAuthenticationOptions
+                    {
+                        ServerCertificate = serverCertificate,
+                        ClientCertificateRequired = false,
+                        CertificateRevocationCheckMode = System.Security.Cryptography.X509Certificates.X509RevocationMode.NoCheck
+                    };
+                    
+                    await sslStream.AuthenticateAsServerAsync(sslOptions, timeout.Token);
                     using StreamReader reader = new StreamReader(sslStream, Encoding.UTF8);
 
-                    string? receivedData = await reader.ReadLineAsync(stoppingToken);
+                    string? receivedData = await reader.ReadLineAsync(timeout.Token);
                     if (!string.IsNullOrEmpty(receivedData))
                     {
                         Console.WriteLine("New data received");
 
-                        string[] subData = receivedData.Split('|',2);
+                        string[] subData = receivedData.Split('|', 2);
+                        
+                        Console.WriteLine(subData.Length);
                         if (subData.Length == 2)
                         {
                             Console.WriteLine($"{DateTime.Now}: Received {subData[1]}");
-                            
-                            if (TokenValidaton.IsValid(subData[0]))
+
+                            if (_tokenValidator.IsValid(subData[0]))
                             {
                                 Console.WriteLine("Token is valid");
 
@@ -53,6 +65,9 @@ public class TcpReceiverService(IServiceScopeFactory _scopeFactory, IConfigurati
                                     var repo = scope.ServiceProvider.GetRequiredService<LogRepository>();
                                     var toSave = new Payload { log = subData[1] };
                                     await repo.SaveLogs(toSave);
+
+                                    string discordMessage = $"New data in database {DateTime.Now:HH:mm:ss}";
+                                    await _discordAlert.SendAlert(discordMessage);
                                 }
                             }
                         }
@@ -60,8 +75,15 @@ public class TcpReceiverService(IServiceScopeFactory _scopeFactory, IConfigurati
                 }
                 catch (Exception ex)
                 {
+                    if (ex is OperationCanceledException)
+                    {
+                        Console.WriteLine("Tiemout, too slow connection");
+                    }
 
-                    Console.WriteLine($"Ignored wrong TCP package: {ex.Message}");
+                    else
+                    {
+                        Console.WriteLine($"Ignored wrong TCP package: {ex.Message}");
+                    }
                 }
             }
         }
