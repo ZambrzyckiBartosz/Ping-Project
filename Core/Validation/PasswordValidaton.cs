@@ -1,5 +1,6 @@
 using Ping_Project.Requests;
-namespace Ping_Project.Validation;
+
+namespace Ping_Project.Core.Validation;
 
 public static class PasswordValidaton
 {

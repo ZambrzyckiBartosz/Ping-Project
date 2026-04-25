@@ -1,9 +1,8 @@
 using Microsoft.Extensions.Caching.Memory;
-using Ping_Project.Infrastructure.Repository;
-using Ping_Project.Entities;
-using Microsoft.Extensions.Caching.Memory;
+using Ping_Project.Infrastructure.Database.Repository;
+using Ping_Project.Core.Entities;
 
-namespace Ping_Project.Validation;
+namespace Ping_Project.Core.Validation;
 public class DataValidation(TokenValidaton _tokenValidator, IServiceScopeFactory _scopeFactory, DiscordAlertService _discordAlert, IMemoryCache _memoryCache)
 {
     public async Task ValidData(string token, string timestamp, string payload)

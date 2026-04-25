@@ -1,4 +1,4 @@
-namespace Ping_Project.Validation;
+namespace Ping_Project.Core.Validation;
 
 public class TokenValidaton(IConfiguration _configuration)
 {

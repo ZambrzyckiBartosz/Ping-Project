@@ -6,3 +6,4 @@ bin/
 croc_shield.pfx
 rsa_private.pem
 rsa_public.pem
+Keys/

@@ -4,7 +4,7 @@ using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Ping_Project.Handlers;
-using Ping_Project.Validation;
+using Ping_Project.Core.Validation;
 
 namespace Ping_Project.Services;
 

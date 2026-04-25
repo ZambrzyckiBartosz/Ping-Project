@@ -1,6 +1,4 @@
-using Microsoft.AspNetCore.Mvc.Formatters;
-
-namespace Ping_Project.ValueObjects;
+namespace Ping_Project.Core.ValueObjects;
 
 public class Log
 {

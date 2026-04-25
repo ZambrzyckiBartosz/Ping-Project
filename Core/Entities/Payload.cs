@@ -1,5 +1,5 @@
-using Ping_Project.ValueObjects;
-namespace Ping_Project.Entities;
+using Ping_Project.Core.ValueObjects;
+namespace Ping_Project.Core.Entities;
 
 public class Payload
 {

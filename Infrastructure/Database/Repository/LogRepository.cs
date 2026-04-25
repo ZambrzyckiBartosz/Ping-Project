@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using Ping_Project.Entities;
-namespace Ping_Project.Infrastructure.Repository;
+using Ping_Project.Core.Entities;
+
+namespace Ping_Project.Infrastructure.Database.Repository;
 public class LogRepository(AppDbContext _context)
 {
     public async Task SaveLogs(Payload payload)

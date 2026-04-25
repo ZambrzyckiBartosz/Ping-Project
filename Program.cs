@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
-using Ping_Project.Entities;
+using Ping_Project.Core.Entities;
 using Ping_Project.Infrastructure;
-using Ping_Project.Infrastructure.Repository;
+using Ping_Project.Infrastructure.Database.Repository;
 using Ping_Project.Services;
-using Ping_Project.Validation;
+using Ping_Project.Core.Validation;
 
 var builder = WebApplication.CreateBuilder(args);
 
