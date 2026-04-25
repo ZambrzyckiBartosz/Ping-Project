@@ -13,7 +13,7 @@ public class TaskQueueManager
 
     public string? GetTask()
     {
-        tasks.TryDequeue(out string task);
+        tasks.TryDequeue(out string? task);
         
         return string.IsNullOrWhiteSpace(task) ? null : task;
     }

@@ -13,6 +13,7 @@ builder.Services.AddSingleton<Decrypt>();
 builder.Services.AddSingleton<TokenValidaton>();
 builder.Services.AddSingleton<DataValidation>();
 builder.Services.AddSingleton<TaskQueueManager>();
+builder.Services.AddSingleton<CrocConnectionService>();
 builder.Services.AddSingleton<DiscordAlertService>();
 builder.Services.AddHostedService<TcpReceiverService>();
 builder.Services.AddScoped<LogRepository>();

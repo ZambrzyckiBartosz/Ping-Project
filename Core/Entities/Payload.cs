@@ -6,5 +6,5 @@ public class Payload
     public int ID { get; set; }
     public DateTime Date { get; set; } = DateTime.UtcNow;
     
-    public Log log { get; set; }
+    public required Log log { get; set; }
 }

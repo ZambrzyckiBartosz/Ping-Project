@@ -4,7 +4,7 @@ using System.Text.Json;
 public class DiscordAlertService
 {
     private readonly HttpClient _httpClient;
-    private readonly string _webhookUrl;
+    private readonly string? _webhookUrl;
 
     public DiscordAlertService(IConfiguration _configuration)
     {

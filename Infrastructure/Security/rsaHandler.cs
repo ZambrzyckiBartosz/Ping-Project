@@ -23,7 +23,7 @@ public static class rsaHandler
             decryptedData = Encoding.UTF8.GetString(decryptedBytes);
             Console.WriteLine("RSA decrypted data");
         }
-        catch (Exception ex)
+        catch 
         {
             Console.WriteLine("Not encrypted data");
         }
