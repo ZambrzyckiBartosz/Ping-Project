@@ -3,10 +3,10 @@ using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using Ping_Project.Handlers;
+using Ping_Project.Infrastructure.Security;
 using Ping_Project.Core.Validation;
 
-namespace Ping_Project.Services;
+namespace Ping_Project.Workers;
 
 public class TcpReceiverService(IConfiguration _configuration, DataValidation _dataValidation) : BackgroundService
 {

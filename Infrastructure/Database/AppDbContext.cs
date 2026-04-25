@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Ping_Project.Core.Entities;
 using Ping_Project.Core.ValueObjects;
-using Ping_Project.Services;
+using Ping_Project.Infrastructure.Security;
 
 namespace Ping_Project.Infrastructure;
 

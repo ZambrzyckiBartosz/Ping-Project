@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Ping_Project.Handlers;
+namespace Ping_Project.Infrastructure.Security;
 public static class rsaHandler
 {
 

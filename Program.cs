@@ -1,8 +1,9 @@
 using Microsoft.EntityFrameworkCore;
-using Ping_Project.Core.Entities;
+using Ping_Project.Core.State;
 using Ping_Project.Infrastructure;
 using Ping_Project.Infrastructure.Database.Repository;
-using Ping_Project.Services;
+using Ping_Project.Infrastructure.Security;
+using Ping_Project.Workers;
 using Ping_Project.Core.Validation;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +12,7 @@ builder.Services.AddSingleton<Encrypt>();
 builder.Services.AddSingleton<Decrypt>();
 builder.Services.AddSingleton<TokenValidaton>();
 builder.Services.AddSingleton<DataValidation>();
+builder.Services.AddSingleton<TaskQueueManager>();
 builder.Services.AddSingleton<DiscordAlertService>();
 builder.Services.AddHostedService<TcpReceiverService>();
 builder.Services.AddScoped<LogRepository>();

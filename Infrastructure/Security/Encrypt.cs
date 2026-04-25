@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 
-namespace Ping_Project.Services;
+namespace Ping_Project.Infrastructure.Security;
 
 public class Encrypt
 {
