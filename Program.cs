@@ -12,10 +12,12 @@ builder.Services.AddSingleton<Encrypt>();
 builder.Services.AddSingleton<Decrypt>();
 builder.Services.AddSingleton<TokenValidaton>();
 builder.Services.AddSingleton<DataValidation>();
+builder.Services.AddTransient<Ping_Project.Core.Network.PayloadProcessor>();
 builder.Services.AddSingleton<TaskQueueManager>();
 builder.Services.AddSingleton<CrocConnectionService>();
 builder.Services.AddSingleton<DiscordAlertService>();
 builder.Services.AddHostedService<TcpReceiverService>();
+builder.Services.AddHostedService<OperatorInterfaceService>();
 builder.Services.AddScoped<LogRepository>();
 builder.Services.AddMemoryCache();
 builder.Services.AddDbContext<AppDbContext>(options =>

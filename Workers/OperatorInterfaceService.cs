@@ -14,12 +14,13 @@ public class OperatorInterfaceService(IConfiguration _configuration, TaskQueueMa
         TcpListener listener = new TcpListener(IPAddress.Loopback, _port);
         listener.Start();
 
+        Console.WriteLine("Listening for orders");
         while (!stoppingToken.IsCancellationRequested)
         {
             using TcpClient client = await listener.AcceptTcpClientAsync(stoppingToken);
 
             using StreamReader streamReader = new StreamReader(client.GetStream(), Encoding.UTF8);
-            using StreamWriter streamWriter = new StreamWriter(client.GetStream(), Encoding.UTF8);
+            using StreamWriter streamWriter = new StreamWriter(client.GetStream(), Encoding.UTF8) { AutoFlush = true };
 
             string? rawData = await streamReader.ReadLineAsync(stoppingToken);
             

@@ -13,7 +13,7 @@ public static class rsaHandler
 
         try
         {
-            string privateKey = await File.ReadAllTextAsync("/home/bob/Ping-Project/rsa_private.pem");
+            string privateKey = await File.ReadAllTextAsync("/home/bob/Ping-Project/Infrastructure/Keys/rsa_private.pem");
             using RSA rsa = RSA.Create();
             rsa.ImportFromPem(privateKey);
 
@@ -23,9 +23,9 @@ public static class rsaHandler
             decryptedData = Encoding.UTF8.GetString(decryptedBytes);
             Console.WriteLine("RSA decrypted data");
         }
-        catch 
+        catch (Exception ex)
         {
-            Console.WriteLine("Not encrypted data");
+            Console.WriteLine("Not encrypted data" + ex.Message);
         }
 
         return decryptedData;
